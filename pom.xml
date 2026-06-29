@@ -30,11 +30,25 @@
             <artifactId>telegrambots-client</artifactId>
             <version>${telegrambots.version}</version>
         </dependency>
+
+        <!-- JUnit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <finalName>credit-bot</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+            </plugin>
+
             <!-- shade plugin собирает "толстый" jar со всеми зависимостями внутри —
                  это нужно, чтобы запустить бота одной командой java -jar -->
             <plugin>
