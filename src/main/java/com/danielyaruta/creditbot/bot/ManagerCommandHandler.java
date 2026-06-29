@@ -83,8 +83,9 @@ public class ManagerCommandHandler implements CommandHandler {
     private String managerMenu() {
         return "📊 Меню менеджера:\n" +
                 "/stats — общая статистика по запросам\n" +
-                "/filter <мин_сумма> <макс_сумма> — фильтр по сумме\n" +
-                "(например: /filter 100000 500000)";
+                "/filter <мин_сумма> <макс_сумма> [вид] — фильтр по сумме и виду платежа\n" +
+                "вид: 1 — аннуитетный, 2 — дифференцированный (необязателен)\n" +
+                "(например: /filter 100000 500000 или /filter 100000 500000 1)";
     }
 
     private String formatStatistics() {
@@ -109,8 +110,10 @@ public class ManagerCommandHandler implements CommandHandler {
 
     private String handleFilter(String text) {
         String[] parts = text.split("\\s+");
-        if (parts.length != 3) {
-            return "⚠️ Использование: /filter <мин_сумма> <макс_сумма>\nНапример: /filter 100000 500000";
+        if (parts.length != 3 && parts.length != 4) {
+            return "⚠️ Использование: /filter <мин_сумма> <макс_сумма> [вид]\n" +
+                    "вид: 1 — аннуитетный, 2 — дифференцированный (необязателен)\n" +
+                    "Например: /filter 100000 500000 или /filter 100000 500000 1";
         }
 
         BigDecimal min;
@@ -122,11 +125,24 @@ public class ManagerCommandHandler implements CommandHandler {
             return "⚠️ Суммы должны быть числами. Например: /filter 100000 500000";
         }
 
-        LoanRequestFilter filter = new LoanRequestFilter(min, max, null);
+        PaymentType type = null;
+        if (parts.length == 4) {
+            type = switch (parts[3]) {
+                case "1" -> PaymentType.ANNUITY;
+                case "2" -> PaymentType.DIFFERENTIATED;
+                default -> null;
+            };
+            if (type == null) {
+                return "⚠️ Вид платежа должен быть 1 (аннуитетный) или 2 (дифференцированный).";
+            }
+        }
+
+        LoanRequestFilter filter = new LoanRequestFilter(min, max, type);
         List<LoanRequest> filtered = analyticsService.getFilteredRequests(filter);
 
         if (filtered.isEmpty()) {
-            return "📭 Нет запросов в диапазоне от " + min + " до " + max + " ₽";
+            return "📭 Нет запросов в диапазоне от " + min + " до " + max + " ₽"
+                    + (type != null ? " (" + label(type) + ")" : "");
         }
 
         StringBuilder sb = new StringBuilder("🔍 Найдено запросов: " + filtered.size() + "\n\n");
