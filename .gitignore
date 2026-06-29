@@ -1,0 +1,15 @@
+config.properties
+
+# Maven
+target/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+out/
+
+# OS
+.DS_Store
+
+# Логи
+*.log
